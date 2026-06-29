@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Made by Marley Live Schedule</title>
+<style>
+body{
+    margin:0;
+    background:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#14264b;
+}
+.container{
+    max-width:760px;
+    margin:20px auto;
+    padding:20px;
+}
+h1{
+    text-align:center;
+    margin-bottom:5px;
+}
+p{
+    text-align:center;
+    color:#555;
+}
+.notice{
+    background:#f6f8fc;
+    border:1px solid #d9e2f2;
+    padding:14px;
+    border-radius:8px;
+    margin:20px 0;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+th,td{
+    padding:14px;
+    border-bottom:1px solid #e5e5e5;
+    text-align:left;
+}
+th{
+    background:#14264b;
+    color:white;
+}
+.next{
+    background:#eef4ff;
+    font-weight:bold;
+}
+select{
+    padding:8px;
+    margin-top:10px;
+}
+@media(max-width:600px){
+    table{font-size:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Made by Marley Live Schedule</h1>
+<p>Times are automatically converted from the UK to your local timezone.</p>
+
+<label><strong>Timezone:</strong></label>
+<select id="tz"></select>
+
+<div class="notice" id="nextLive"></div>
+
+<table id="schedule">
+<thead>
+<tr>
+<th>Event</th>
+<th>UK Time</th>
+<th>Your Time</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+<script>
+const {DateTime}=luxon;
+
+// ===== EDIT THIS SECTION ONLY =====
+const events=[
+{title:"Facebook Live",date:"2026-06-27",time:"20:00"},
+{title:"YouTube Live",date:"2026-06-28",time:"20:00"},
+{title:"Moroccan Vibes",date:"2026-06-30",time:"20:00"},
+{title:"Goddess Chest",date:"2026-07-03",time:"20:00"},
+{title:"Transfers & Questions",date:"2026-07-05",time:"20:00"}
+];
+// ================================
+
+const zoneOptions=[
+{name:"🌍 Auto Detect",zone:Intl.DateTimeFormat().resolvedOptions().timeZone},
+{name:"🇬🇧 United Kingdom",zone:"Europe/London"},
+{name:"🇺🇸 New York (ET)",zone:"America/New_York"},
+{name:"🇨🇦 Toronto (Canada)",zone:"America/Toronto"},
+{name:"🇺🇸 Chicago (CT)",zone:"America/Chicago"},
+{name:"🇺🇸 Denver (MT)",zone:"America/Denver"},
+{name:"🇺🇸 Los Angeles (PT)",zone:"America/Los_Angeles"},
+{name:"🇫🇷 Paris / Berlin",zone:"Europe/Paris"},
+{name:"🇮🇹 Rome / Madrid",zone:"Europe/Rome"},
+{name:"🇫🇮 Helsinki",zone:"Europe/Helsinki"},
+{name:"🇦🇺 Sydney",zone:"Australia/Sydney"},
+{name:"🇦🇺 Melbourne",zone:"Australia/Melbourne"},
+{name:"🇦🇺 Brisbane",zone:"Australia/Brisbane"},
+{name:"🇦🇺 Perth",zone:"Australia/Perth"},
+{name:"🇳🇿 Auckland",zone:"Pacific/Auckland"}
+];
+
+const tzSelect=document.getElementById("tz");
+zoneOptions.forEach(z=>{
+ const o=document.createElement("option");
+ o.value=z.zone;
+ o.textContent=z.name;
+ tzSelect.appendChild(o);
+});
+tzSelect.value=zoneOptions[0].zone;
+
+function render(){
+ const tz=tzSelect.value;
+ const tbody=document.querySelector("#schedule tbody");
+ tbody.innerHTML="";
+ let next=null;
+
+ events.forEach(ev=>{
+   const london=DateTime.fromISO(ev.date+"T"+ev.time,{zone:"Europe/London"});
+   if(!next && london>DateTime.now().setZone("Europe/London")) next=london;
+
+   const local=london.setZone(tz);
+
+   const tr=document.createElement("tr");
+   if(next && next.toISO()===london.toISO()) tr.className="next";
+   tr.innerHTML=`<td>${ev.title}</td>
+   <td>${london.toFormat("ccc d LLL • h:mm a")}</td>
+   <td>${local.toFormat("ccc d LLL • h:mm a")}</td>`;
+   tbody.appendChild(tr);
+ });
+
+ const box=document.getElementById("nextLive");
+ if(next){
+   const local=next.setZone(tz);
+   box.innerHTML=`<strong>Next Live</strong><br>${events.find(e=>DateTime.fromISO(e.date+"T"+e.time,{zone:"Europe/London"}).toISO()===next.toISO()).title}
+   <br><br><strong>Your Time:</strong> ${local.toFormat("cccc d LLLL • h:mm a")}`;
+ }else{
+   box.innerHTML="No upcoming events.";
+ }
+}
+tzSelect.onchange=render;
+render();
+</script>
+
+
+</body>
+</html>
