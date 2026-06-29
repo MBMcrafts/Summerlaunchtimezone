@@ -55,6 +55,53 @@ select{
 @media(max-width:600px){
     table{font-size:14px;}
 }
+
+/* ===== Responsive improvements ===== */
+.event-card{display:none;}
+
+@media (max-width:700px){
+
+.container{
+    padding:16px;
+    margin:0 auto;
+}
+
+table{
+    display:none;
+}
+
+.event-card{
+    display:block;
+    border:1px solid #d9e2f2;
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:14px;
+    background:#fff;
+}
+
+.event-title{
+    font-size:20px;
+    font-weight:bold;
+    color:#14264b;
+    margin-bottom:12px;
+}
+
+.label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#6b7280;
+    margin-top:10px;
+}
+
+.time{
+    font-size:18px;
+    font-weight:bold;
+    color:#14264b;
+}
+
+}
+
 </style>
 </head>
 <body>
@@ -127,7 +174,7 @@ tzSelect.value=zoneOptions[0].zone;
 function render(){
  const tz=tzSelect.value;
  const tbody=document.querySelector("#schedule tbody");
- tbody.innerHTML="";
+ tbody.innerHTML="";document.querySelectorAll(".event-card").forEach(e=>e.remove());
  let next=null;
 
  events.forEach(ev=>{
@@ -142,6 +189,19 @@ function render(){
    <td>${london.toFormat("ccc d LLL • h:mm a")}</td>
    <td>${local.toFormat("ccc d LLL • h:mm a")}</td>`;
    tbody.appendChild(tr);
+
+   const card=document.createElement("div");
+   card.className="event-card"+((next && next.toISO()===london.toISO())?" next":"");
+   card.innerHTML=`
+      <div class="event-title">${ev.title}</div>
+
+      <div class="label">🇬🇧 UK Time</div>
+      <div class="time">${london.toFormat("cccc d LLLL")}<br>${london.toFormat("h:mm a")}</div>
+
+      <div class="label">🌍 Your Time</div>
+      <div class="time">${local.toFormat("cccc d LLLL")}<br>${local.toFormat("h:mm a")}</div>
+   `;
+   tbody.parentNode.parentNode.appendChild(card);
  });
 
  const box=document.getElementById("nextLive");
@@ -156,6 +216,11 @@ function render(){
 tzSelect.onchange=render;
 render();
 </script>
+
+
+</body>
+</html>
+
 
 
 </body>
